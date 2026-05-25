@@ -20,26 +20,34 @@ function ensureConversationId() {
   }
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+function renderMessageContent(container, role, text) {
+  container.textContent = '';
+  const roleEl = document.createElement('span');
+  roleEl.className = 'role';
+  roleEl.textContent = `${role}:`;
+  container.appendChild(roleEl);
+  container.appendChild(document.createTextNode(' '));
+
+  const lines = String(text).split('\n');
+  lines.forEach((line, index) => {
+    if (index > 0) {
+      container.appendChild(document.createElement('br'));
+    }
+    container.appendChild(document.createTextNode(line));
+  });
 }
 
 function appendLine(role, text, className = '') {
   const block = document.createElement('div');
   block.className = `message-line ${className}`.trim();
-  block.innerHTML = `<span class="role">${role}:</span> ${escapeHtml(text).replace(/\n/g, '<br>')}`;
+  renderMessageContent(block, role, text);
   outputEl.appendChild(block);
   outputEl.scrollTop = outputEl.scrollHeight;
   return block;
 }
 
 function appendAssistantChunk(block, text) {
-  block.innerHTML = `<span class="role">assistant:</span> ${escapeHtml(text).replace(/\n/g, '<br>')}`;
+  renderMessageContent(block, 'assistant', text);
   outputEl.scrollTop = outputEl.scrollHeight;
 }
 
@@ -56,7 +64,10 @@ function clearOutput() {
 async function loadPromptTemplates() {
   try {
     const res = await fetch('/api/chat/prompts');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      console.warn(`Could not load prompt templates: HTTP ${res.status}`);
+      return;
+    }
     const templates = await res.json();
     const names = Object.keys(templates);
 
@@ -114,7 +125,7 @@ async function readErrorBody(response) {
   try {
     const parsed = JSON.parse(text);
     return extractErrorMessage(parsed, text);
-  } catch (e) {
+  } catch {
     return text;
   }
 }
@@ -237,6 +248,6 @@ messageEl.addEventListener('keydown', (event) => {
   }
 });
 
-loadPromptTemplates();
+await loadPromptTemplates();
 newConversation();
 

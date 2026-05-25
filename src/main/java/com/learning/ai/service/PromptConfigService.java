@@ -1,11 +1,13 @@
 package com.learning.ai.service;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,6 +20,7 @@ public class PromptConfigService {
     private String defaultSystemPrompt;
 
     @Value("${ai.prompts.max-history:10}")
+    @Getter
     private int maxHistory;
 
     private final Map<String, String> promptTemplates = new ConcurrentHashMap<>();
@@ -38,15 +41,18 @@ public class PromptConfigService {
             log.debug("No template name provided, using default system prompt");
             return defaultSystemPrompt;
         }
-        String resolved = promptTemplates.getOrDefault(templateName.toLowerCase(), defaultSystemPrompt);
-        boolean found = promptTemplates.containsKey(templateName.toLowerCase());
-        log.debug("Resolved template '{}': {} ({})", templateName, found ? "found" : "not found, using default",
-                resolved.length() + " chars");
+        String normalizedTemplate = templateName.toLowerCase(Locale.ROOT);
+        String resolved = promptTemplates.getOrDefault(normalizedTemplate, defaultSystemPrompt);
+        boolean found = promptTemplates.containsKey(normalizedTemplate);
+        if (log.isDebugEnabled()) {
+            log.debug("Resolved template '{}': {} ({} chars)", templateName,
+                    found ? "found" : "not found, using default", resolved.length());
+        }
         return resolved;
     }
 
     public void setSystemPrompt(String templateName, String prompt) {
-        promptTemplates.put(templateName.toLowerCase(), prompt);
+        promptTemplates.put(templateName.toLowerCase(Locale.ROOT), prompt);
         log.info("Updated prompt template: {}", templateName);
     }
 
@@ -54,7 +60,4 @@ public class PromptConfigService {
         return Map.copyOf(promptTemplates);
     }
 
-    public int getMaxHistory() {
-        return maxHistory;
-    }
 }

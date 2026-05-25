@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @Service
 public class ConversationHistoryService {
@@ -19,12 +21,14 @@ public class ConversationHistoryService {
 
     public void saveConversation(String conversationId, String prompt, String response) {
         Conversation conversation = new Conversation(conversationId, prompt, response);
-        conversationStore.computeIfAbsent(conversationId, k -> new ArrayList<>()).add(conversation);
+        conversationStore.computeIfAbsent(conversationId, key -> Collections.synchronizedList(new ArrayList<>()))
+                .add(conversation);
         log.info("Saved conversation: {}", conversationId);
     }
 
     public List<ConversationResponse> getConversationHistory(String conversationId) {
-        List<ConversationResponse> result = conversationStore.getOrDefault(conversationId, Collections.emptyList())
+        List<Conversation> snapshot = new ArrayList<>(conversationStore.getOrDefault(conversationId, Collections.emptyList()));
+        List<ConversationResponse> result = snapshot
                 .stream()
                 .map(conv -> new ConversationResponse(
                         conv.getConversationId(),
@@ -32,7 +36,7 @@ public class ConversationHistoryService {
                         conv.getResponse(),
                         conv.getTimestamp()
                 ))
-                .collect(Collectors.toList());
+                .toList();
         log.debug("Fetched conversation history: conversationId={}, turns={}", conversationId, result.size());
         return result;
     }
@@ -54,8 +58,4 @@ public class ConversationHistoryService {
         log.info("Cleared conversation: {}", conversationId);
     }
 
-    public void clearAllConversations() {
-        conversationStore.clear();
-        log.info("Cleared all conversations");
-    }
 }

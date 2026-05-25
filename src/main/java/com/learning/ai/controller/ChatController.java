@@ -9,10 +9,17 @@ import com.learning.ai.service.PromptConfigService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
@@ -41,7 +48,7 @@ public class ChatController {
                 request.conversationId(), request.promptTemplate(), request.stream());
         if (request.stream()) {
             log.warn("Client sent stream=true to /message endpoint, returning 501");
-            return ResponseEntity.status(501)
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
                     .body(new ChatResponse(null, "Use /stream endpoint for streaming", false, null, System.currentTimeMillis()));
         }
         return ResponseEntity.ok(chatService.chat(request));
@@ -79,11 +86,15 @@ public class ChatController {
     public ResponseEntity<String> setPromptTemplate(
             @PathVariable String templateName,
             @RequestBody Map<String, String> request) {
+        if (request == null) {
+            return ResponseEntity.badRequest().body("Request body cannot be null");
+        }
+
         String prompt = request.get("prompt");
-        if (prompt != null) {
+        if (prompt != null && !prompt.isBlank()) {
             promptConfigService.setSystemPrompt(templateName, prompt);
             return ResponseEntity.ok("Prompt template updated: " + templateName);
         }
-        return ResponseEntity.badRequest().body("Prompt cannot be null");
+        return ResponseEntity.badRequest().body("Prompt cannot be null or blank");
     }
 }

@@ -26,9 +26,7 @@ public class AiConfig {
     @PostConstruct
     public void logStartupConfig() {
         boolean keySet = apiKey != null && !apiKey.isBlank();
-        String keyStatus = keySet
-                ? "set (" + apiKey.substring(0, Math.min(8, apiKey.length())) + "...)"
-                : "MISSING - requests will fail";
+        String keyStatus = keySet ? "set" : "MISSING - requests will fail";
         log.info("=== AI Learning App Configuration ===");
         log.info("  OpenAI base URL : {}", baseUrl);
         log.info("  Model           : {}", model);

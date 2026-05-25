@@ -16,12 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ChatService {
 
     private static final Logger log = LoggerFactory.getLogger(ChatService.class);
+    private static final long STREAM_TIMEOUT_MS = 30_000L;
 
     private final ChatModel chatModel;
     private final ConversationHistoryService conversationHistoryService;
@@ -63,7 +66,7 @@ public class ChatService {
     }
 
     public SseEmitter streamChat(ChatRequest request) {
-        SseEmitter emitter = new SseEmitter(30000L);
+        SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MS);
         emitter.onTimeout(() -> {
             log.warn("Stream timed out");
             sendStreamError(emitter, "Request timed out while waiting for AI response.");
@@ -86,6 +89,9 @@ public class ChatService {
                 chunk -> {
                     try {
                         String text = chunk.getResult().getOutput().getContent();
+                        if (text == null || text.isBlank()) {
+                            return;
+                        }
                         fullResponse.append(text);
                         log.debug("Stream chunk: conversationId={}, chunkLength={}", conversationId, text.length());
                         emitter.send(SseEmitter.event()
@@ -138,7 +144,9 @@ public class ChatService {
         List<Conversation> history = conversationHistoryService.getConversationHistoryRaw(conversationId);
         int count = 0;
         for (Conversation conv : history) {
-            if (count >= promptConfigService.getMaxHistory()) break;
+            if (count >= promptConfigService.getMaxHistory()) {
+                break;
+            }
             messages.add(new UserMessage(conv.getPrompt()));
             messages.add(new AssistantMessage(conv.getResponse()));
             count++;
