@@ -1,0 +1,191 @@
+:root {
+  color-scheme: light dark;
+  --bg: #0f172a;
+  --panel: #111827;
+  --border: #334155;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: linear-gradient(180deg, #020617, #0f172a);
+  color: var(--text);
+}
+
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.card {
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+p.subtle {
+  margin: 0 0 20px;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0b1220;
+  color: var(--text);
+  padding: 12px 14px;
+  font: inherit;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.inline input {
+  width: auto;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+button {
+  width: auto;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 12px 16px;
+}
+
+button.primary {
+  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  color: #03111f;
+  border: none;
+}
+
+button.secondary {
+  background: #1f2937;
+}
+
+button.ghost {
+  background: transparent;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.status.error {
+  color: #fca5a5;
+}
+
+.output {
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #07101c;
+  min-height: 280px;
+  padding: 16px;
+  white-space: pre-wrap;
+  overflow: auto;
+  line-height: 1.55;
+}
+
+.message-line {
+  margin: 0 0 14px;
+}
+
+.role {
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+.assistant .role {
+  color: #86efac;
+}
+
+.footer {
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+code {
+  background: rgba(148, 163, 184, 0.14);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
